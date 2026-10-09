@@ -1,0 +1,178 @@
+/* Grupo de Investigación UTEC — estilos compartidos por todas las páginas */
+
+:root {
+  --fondo: #f7f8fa;
+  --superficie: #ffffff;
+  --superficie-2: #eef1f5;
+  --texto: #18202b;
+  --texto-suave: #4c5868;
+  --borde: #d9dee6;
+  --acento: #1f5fbf;
+  --acento-suave: #e3edfb;
+  --acento-texto: #ffffff;
+  --aviso: #8a4b00;
+  --aviso-fondo: #fff4e0;
+  --codigo-fondo: #0f1620;
+  --codigo-texto: #dbe4ee;
+  --codigo-comentario: #7f93a8;
+  --sombra: 0 1px 2px rgba(16, 24, 40, .06), 0 4px 16px rgba(16, 24, 40, .06);
+  --radio: 12px;
+  --ancho: 1040px;
+  --fuente: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fondo: #0e131a;
+    --superficie: #151c25;
+    --superficie-2: #1c2531;
+    --texto: #e6ebf1;
+    --texto-suave: #a3b0c0;
+    --borde: #2a3543;
+    --acento: #6ea8ff;
+    --acento-suave: #1a2a42;
+    --acento-texto: #0e131a;
+    --aviso: #ffcf8a;
+    --aviso-fondo: #2e2414;
+    --codigo-fondo: #0a0f15;
+    --sombra: 0 1px 2px rgba(0, 0, 0, .4);
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: var(--fuente);
+  font-size: 17px;
+  line-height: 1.6;
+}
+img { max-width: 100%; height: auto; display: block; }
+a { color: var(--acento); text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+code, pre, kbd { font-family: var(--mono); }
+code { font-size: .9em; background: var(--superficie-2); padding: .1em .35em; border-radius: 5px; }
+kbd {
+  font-size: .85em; padding: .1em .45em; border: 1px solid var(--borde);
+  border-bottom-width: 2px; border-radius: 5px; background: var(--superficie);
+}
+
+.contenedor { max-width: var(--ancho); margin: 0 auto; padding: 0 20px; }
+
+/* ---- barra superior ---- */
+.barra {
+  position: sticky; top: 0; z-index: 10;
+  background: color-mix(in srgb, var(--superficie) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--borde);
+}
+.barra .contenedor { display: flex; align-items: center; gap: 20px; min-height: 60px; flex-wrap: wrap; }
+.marca { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--texto); text-decoration: none; }
+.marca-icono {
+  width: 32px; height: 32px; border-radius: 8px; background: var(--acento); color: var(--acento-texto);
+  display: grid; place-items: center; font-size: 15px; font-weight: 800; letter-spacing: -.5px;
+}
+.menu { display: flex; gap: 18px; margin-left: auto; flex-wrap: wrap; }
+.menu a { color: var(--texto-suave); text-decoration: none; font-size: 15px; }
+.menu a:hover, .menu a[aria-current="page"] { color: var(--texto); }
+
+/* ---- portada ---- */
+.portada { padding: 64px 0 40px; }
+.etiqueta {
+  display: inline-block; font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--acento); background: var(--acento-suave); padding: 4px 10px; border-radius: 999px;
+}
+h1 { font-size: clamp(32px, 5vw, 48px); line-height: 1.12; margin: 16px 0 14px; letter-spacing: -.02em; }
+h2 { font-size: 26px; line-height: 1.25; margin: 0 0 14px; letter-spacing: -.01em; }
+h3 { font-size: 19px; margin: 0 0 8px; }
+.entrada { font-size: 19px; color: var(--texto-suave); max-width: 720px; margin: 0; }
+
+section { padding: 36px 0; scroll-margin-top: 64px; }
+section + section { border-top: 1px solid var(--borde); }
+.seccion-intro { color: var(--texto-suave); max-width: 720px; margin: 0 0 24px; }
+
+/* ---- tarjetas ---- */
+.rejilla { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
+.tarjeta {
+  background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio);
+  box-shadow: var(--sombra); overflow: hidden; display: flex; flex-direction: column;
+}
+.tarjeta-img { aspect-ratio: 16 / 10; object-fit: cover; object-position: center 40%; width: 100%; background: var(--superficie-2); }
+.tarjeta-cuerpo { padding: 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.tarjeta-cuerpo p { margin: 0; color: var(--texto-suave); }
+.tarjeta-pie { margin-top: auto; padding-top: 6px; }
+.tarjeta.pendiente { border-style: dashed; box-shadow: none; background: transparent; }
+.tarjeta.pendiente .tarjeta-cuerpo { justify-content: center; min-height: 180px; }
+
+.estado {
+  align-self: flex-start; font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+  background: var(--aviso-fondo); color: var(--aviso);
+}
+.boton {
+  display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 9px;
+  background: var(--acento); color: var(--acento-texto); text-decoration: none; font-weight: 600; font-size: 15px;
+  border: 1px solid var(--acento);
+}
+.boton.secundario { background: transparent; color: var(--acento); }
+.botones { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ---- listas y tablas ---- */
+.lista-limpia { list-style: none; padding: 0; margin: 0; }
+.personas { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.persona { background: var(--superficie); border: 1px solid var(--borde); border-radius: 10px; padding: 12px 16px; }
+.persona span { display: block; color: var(--texto-suave); font-size: 14px; }
+
+.tabla-envoltura { overflow-x: auto; border: 1px solid var(--borde); border-radius: 10px; background: var(--superficie); }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--borde); vertical-align: top; }
+th { background: var(--superficie-2); font-weight: 600; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ---- página de proyecto ---- */
+.dos-columnas { display: grid; gap: 32px; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: start; }
+.foto-banco { border-radius: var(--radio); border: 1px solid var(--borde); max-height: 560px; width: auto; margin: 0 auto; }
+figure { margin: 0; }
+figcaption { font-size: 14px; color: var(--texto-suave); margin-top: 8px; text-align: center; }
+.diagrama { background: #fff; border-radius: var(--radio); padding: 16px; border: 1px solid var(--borde); }
+.datos { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; margin: 0; }
+.datos dt { font-weight: 600; }
+.datos dd { margin: 0; color: var(--texto-suave); }
+.nota {
+  border-left: 4px solid var(--aviso); background: var(--aviso-fondo); padding: 12px 16px;
+  border-radius: 0 8px 8px 0; margin: 18px 0 0;
+}
+.nota strong { color: var(--aviso); }
+
+/* ---- visor de código ---- */
+.pestanas { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.pestana {
+  font: inherit; font-size: 15px; font-weight: 600; padding: 8px 14px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--borde); background: var(--superficie); color: var(--texto-suave);
+}
+.pestana[aria-selected="true"] { background: var(--acento); border-color: var(--acento); color: var(--acento-texto); }
+.visor { border: 1px solid var(--borde); border-radius: var(--radio); overflow: hidden; background: var(--superficie); }
+.visor-cabecera { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--borde); }
+.visor-cabecera p { margin: 0; color: var(--texto-suave); font-size: 15px; flex: 1 1 320px; }
+.visor-cabecera .botones a { font-size: 14px; padding: 7px 12px; }
+.codigo {
+  margin: 0; max-height: 560px; overflow: auto; background: var(--codigo-fondo); color: var(--codigo-texto);
+  font-size: 13px; line-height: 1.5; padding: 14px 16px; tab-size: 2; position: relative;
+}
+.codigo .com { color: var(--codigo-comentario); }
+
+footer { padding: 32px 0 48px; color: var(--texto-suave); font-size: 14px; border-top: 1px solid var(--borde); }
+
+@media (max-width: 760px) {
+  body { font-size: 16px; }
+  .portada { padding: 40px 0 24px; }
+  .dos-columnas { grid-template-columns: 1fr; }
+  .menu { margin-left: 0; gap: 14px; }
+  .datos { grid-template-columns: 1fr; }
+  .datos dd { margin-bottom: 6px; }
+}

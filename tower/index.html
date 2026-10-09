@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tower · Grupo de Investigación UTEC</title>
+  <meta name="description" content="Banco torre-hélice de 2 GDL: comparación experimental de seis leyes de control en Arduino. Contexto, hardware y firmware.">
+  <link rel="stylesheet" href="../assets/estilo.css">
+</head>
+<body>
+  <header class="barra">
+    <div class="contenedor">
+      <a class="marca" href="../"><span class="marca-icono" aria-hidden="true">GI</span>Grupo de Investigación UTEC</a>
+      <nav class="menu" aria-label="Secciones del proyecto">
+        <a href="#contexto">Contexto</a>
+        <a href="#leyes">Leyes</a>
+        <a href="#hardware">Hardware</a>
+        <a href="#firmware">Firmware</a>
+        <a href="#uso">Cómo usarlo</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="contenedor">
+      <section class="portada">
+        <a href="../">← Todos los proyectos</a><br><br>
+        <span class="etiqueta">Proyecto · Control</span>
+        <h1>Tower: banco torre-hélice de 2 GDL</h1>
+        <p class="entrada">Seis leyes de control (PID, LQI, LQG, MPC, IMC y H∞) corriendo en un Arduino, comparadas en el
+          mismo banco y con el mismo protocolo de vuelo. Aquí está el contexto del proyecto y el firmware completo de las seis.</p>
+        <br>
+        <div class="botones">
+          <a class="boton" href="#firmware">Ver el código</a>
+          <a class="boton secundario" href="firmware_tower.zip" download>Descargar firmware (.zip)</a>
+        </div>
+      </section>
+
+      <section id="contexto">
+        <div class="dos-columnas">
+          <div>
+            <h2>¿Qué es?</h2>
+            <p>Un brazo con dos motores <em>brushless</em> pivota sobre un carro que sube y baja por dos guías verticales.
+              La <strong>suma</strong> de los empujes levanta el carro (altura <em>z</em>, medida con un sensor ultrasónico)
+              y su <strong>diferencia</strong> inclina el brazo (ángulo <em>θ</em>, estimado con una unidad inercial y un
+              filtro complementario). En pequeño, es el mismo problema que tiene un dron: sostener la altura y mantenerse
+              nivelado.</p>
+            <h2 style="margin-top:28px">¿Qué buscamos?</h2>
+            <p>Comparar seis leyes de control en el mismo hardware y en las mismas condiciones. Para que las diferencias
+              reflejen la <strong>estructura</strong> de cada ley y no lo agresiva que quedó su sintonía, cada una se ajustó
+              para que su controlador de ángulo tenga la <strong>misma ganancia a 6 rad/s</strong> (0.95 Hz), la frecuencia
+              a la que oscila el brazo en vuelo.</p>
+            <p>Con cada ley se hicieron vuelos repetidos con el mismo protocolo: despegue, subida por rampa hasta 10 cm y
+              crucero. El análisis y los resultados están en el paper que enviamos a la conferencia IEEE ICSC 2026.</p>
+            <p class="nota"><strong>Estado:</strong> paper en revisión. Cuando se publique, aquí pondremos la referencia
+              completa y los resultados.</p>
+          </div>
+          <figure>
+            <img class="foto-banco" src="img/banco.jpg" alt="Banco torre-hélice: marco con dos guías metálicas, carro con el brazo azul, dos motores con hélices y el sensor ultrasónico en la base" width="900" height="1600">
+            <figcaption>El banco: el brazo con los dos motores sube por las guías; el ultrasonido está en la base.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="leyes">
+        <h2>Arquitectura de control</h2>
+        <p class="seccion-intro">Los seis programas comparten todo lo demás: lectura de sensores, filtros, fases de vuelo
+          (nivelar, buscar el empuje de vuelo, subir, crucero y aterrizar), protecciones y mezcla de motores con prioridad
+          al ángulo. Solo cambia el bloque de la ley de control (el recuadro punteado).</p>
+        <figure class="diagrama">
+          <img src="img/diagrama_bloques.png" alt="Diagrama de bloques: las leyes de ángulo y de altura calculan u_theta y u_z, la mezcla de motores genera los PWM izquierdo y derecho, y la IMU y el ultrasonido cierran los lazos" width="1050" height="456">
+        </figure>
+
+        <h2 style="margin-top:36px">Las seis leyes</h2>
+        <p class="seccion-intro">Todas tienen la misma ganancia del controlador de ángulo a 6 rad/s; lo que cambia es la fase.
+          Las ganancias de cada una están en <code>controladores_gen.h</code>, generado por el script de diseño.</p>
+        <div class="tabla-envoltura">
+          <table>
+            <thead>
+              <tr><th>Ley</th><th>Carpeta</th><th>Cómo funciona</th><th>Fase de C<sub>θ</sub> a 6 rad/s</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>PID</strong></td><td><code>ctrl_1_pid</code></td><td>PID clásico en cada canal. Es la referencia: las otras cinco se ajustaron para igualar su ganancia.</td><td class="num">+60.8°</td></tr>
+              <tr><td><strong>LQI</strong></td><td><code>ctrl_2_lqi</code></td><td>Regulador lineal cuadrático con acción integral, sobre los estados medidos.</td><td class="num">+79.2°</td></tr>
+              <tr><td><strong>LQG</strong></td><td><code>ctrl_3_lqg</code></td><td>El LQI más un filtro de Kalman: realimenta el estado estimado en vez del medido.</td><td class="num">+78.8°</td></tr>
+              <tr><td><strong>MPC</strong></td><td><code>ctrl_4_mpc</code></td><td>Control predictivo con horizonte de 0.8 s. La solución sin restricciones se precalcula como ganancia; las restricciones las aplica el firmware.</td><td class="num">+73.3°</td></tr>
+              <tr><td><strong>IMC</strong></td><td><code>ctrl_5_imc</code></td><td>Control por modelo interno, con un solo parámetro de sintonía (λ).</td><td class="num">+48.8°</td></tr>
+              <tr><td><strong>H∞</strong></td><td><code>ctrl_6_hinf</code></td><td>Control robusto por conformación de lazo de Glover–McFarlane, de 4.º orden en espacio de estados.</td><td class="num">+41.8°</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="hardware">
+        <h2>Hardware</h2>
+        <div class="dos-columnas">
+          <dl class="datos">
+            <dt>Microcontrolador</dt><dd>Arduino Uno (AVR de 8 bits, 16 MHz). Lazo de control a 200 Hz.</dd>
+            <dt>Ángulo</dt><dd>Unidad inercial por I²C y filtro complementario.</dd>
+            <dt>Altura</dt><dd>Sensor ultrasónico HC-SR04 a 50 Hz y estimador α-β de altura y velocidad.</dd>
+            <dt>Motores</dt><dd>Dos motores <em>brushless</em> con ESC de 30 A, mando PWM de 1000 a 2000 µs.</dd>
+            <dt>Alimentación</dt><dd>Dos fuentes de 12 V, una por motor. El Arduino vigila ambas con divisores de tensión.</dd>
+            <dt>Seguridad</dt><dd>Botón de paro de emergencia por interrupción y aterrizaje automático si el ángulo se va de rango.</dd>
+            <dt>Telemetría</dt><dd>CSV por el puerto serie a 115200 baudios.</dd>
+          </dl>
+          <div class="tabla-envoltura">
+            <table>
+              <thead><tr><th>Conexión</th><th>Pin</th></tr></thead>
+              <tbody>
+                <tr><td>Motor izquierdo (ESC)</td><td class="num">D10</td></tr>
+                <tr><td>Motor derecho (ESC)</td><td class="num">D9</td></tr>
+                <tr><td>Botón de emergencia</td><td class="num">D2</td></tr>
+                <tr><td>Ultrasonido TRIG / ECHO</td><td class="num">D7 / D6</td></tr>
+                <tr><td>IMU (I²C, dirección 0x68)</td><td class="num">A4 / A5</td></tr>
+                <tr><td>Tensión fuente izquierda / derecha</td><td class="num">A0 / A1</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="firmware">
+        <h2>Firmware</h2>
+        <p class="seccion-intro">Elige una ley para ver su código. Cada carpeta trae su <code>.ino</code> y su
+          <code>controladores_gen.h</code>; se abren directamente en el Arduino IDE.</p>
+        <div class="pestanas" role="tablist" aria-label="Ley de control">
+          <button class="pestana" role="tab" data-ley="ctrl_1_pid" aria-selected="true">PID</button>
+          <button class="pestana" role="tab" data-ley="ctrl_2_lqi" aria-selected="false">LQI</button>
+          <button class="pestana" role="tab" data-ley="ctrl_3_lqg" aria-selected="false">LQG</button>
+          <button class="pestana" role="tab" data-ley="ctrl_4_mpc" aria-selected="false">MPC</button>
+          <button class="pestana" role="tab" data-ley="ctrl_5_imc" aria-selected="false">IMC</button>
+          <button class="pestana" role="tab" data-ley="ctrl_6_hinf" aria-selected="false">H∞</button>
+        </div>
+        <div class="visor" role="tabpanel">
+          <div class="visor-cabecera">
+            <p id="visor-info">firmware/ctrl_1_pid/ctrl_1_pid.ino</p>
+            <div class="botones">
+              <a class="boton secundario" id="enlace-ino" href="firmware/ctrl_1_pid/ctrl_1_pid.ino" download>Descargar .ino</a>
+              <a class="boton secundario" id="enlace-h" href="firmware/ctrl_1_pid/controladores_gen.h" download>Descargar .h</a>
+              <a class="boton secundario" id="enlace-github" href="#" hidden>Ver en GitHub</a>
+            </div>
+          </div>
+          <pre class="codigo" id="codigo" tabindex="0">Cargando…</pre>
+        </div>
+      </section>
+
+      <section id="uso">
+        <h2>Cómo cargarlo y volar</h2>
+        <div class="dos-columnas">
+          <ol>
+            <li>Instala el <a href="https://www.arduino.cc/en/software" rel="noopener">Arduino IDE</a>.</li>
+            <li>Descarga el <a href="firmware_tower.zip" download>firmware (.zip)</a> y descomprímelo.</li>
+            <li>Abre <code>ctrl_X_ley/ctrl_X_ley.ino</code>. La carpeta debe llamarse igual que el <code>.ino</code> y tener
+              al lado su <code>controladores_gen.h</code>.</li>
+            <li>Elige la placa <strong>Arduino Uno</strong> y el puerto, y pulsa <strong>Subir</strong>.</li>
+            <li>Abre el Monitor Serie a <strong>115200 baudios</strong>.</li>
+            <li>Antes del primer vuelo: <kbd>i</kbd> para identificar los motores, <kbd>o</kbd> con el brazo nivelado a
+              mano y <kbd>h</kbd> para revisar el estado.</li>
+            <li>Con todo en orden, <kbd>C</kbd> para volar y <kbd>L</kbd> para aterrizar.</li>
+          </ol>
+          <div class="tabla-envoltura">
+            <table>
+              <thead><tr><th>Comando</th><th>Qué hace</th></tr></thead>
+              <tbody>
+                <tr><td><kbd>C</kbd></td><td>Arranca: mide el piso, nivela, despega y sube por la rampa.</td></tr>
+                <tr><td><kbd>L</kbd></td><td>Aterrizaje controlado.</td></tr>
+                <tr><td><kbd>S</kbd></td><td>Parada inmediata: apaga los motores.</td></tr>
+                <tr><td><kbd>h</kbd></td><td>Estado: ángulo, tensiones, trim, vibración…</td></tr>
+                <tr><td><kbd>z10</kbd></td><td>Consigna de altura en cm.</td></tr>
+                <tr><td><kbd>a0.5</kbd></td><td>Escala del lazo de ángulo (0 a 2).</td></tr>
+                <tr><td><kbd>i</kbd></td><td>Identifica qué motor está en cada pin.</td></tr>
+                <tr><td><kbd>o</kbd></td><td>Recalibra el cero del ángulo.</td></tr>
+                <tr><td><kbd>+</kbd> / <kbd>-</kbd></td><td>Ajusta el trim entre motores en 5 µs.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p class="nota"><strong>Seguridad:</strong> las hélices giran con mucha energía. Prueba siempre con el banco fijado,
+          sin manos cerca y con el botón de emergencia a mano. Las leyes IMC y H∞ conviene probarlas primero con
+          <kbd>a0.5</kbd> y subir desde ahí.</p>
+      </section>
+
+      <section id="publicacion">
+        <h2>Publicación</h2>
+        <p><strong>Experimental Comparison of Control Laws on a 2-DOF Tower-Propeller Testbed.</strong><br>
+          G. H. Ramos Astuhuamán, E. A. Chávez Depaz, J. N. Naupay Fabian, D. A. Miranda Zamora, B. S. Ramos Cadenillas,
+          S. Rejas Córdova y D. Inga Narváez.<br>
+          Enviado a la 14th International Conference on Systems and Control (ICSC 2026), Oporto, Portugal · en revisión.</p>
+        <p class="seccion-intro">Si usas este código, cita el paper. La referencia completa estará aquí cuando se publique.</p>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="contenedor"><a href="../">Grupo de Investigación UTEC</a> · Proyecto Tower</div>
+  </footer>
+
+  <script>
+  (function () {
+    // Repositorio en GitHub ("usuario/repositorio"). Vacío = se detecta solo en GitHub Pages.
+    var REPO = "";
+
+    var codigo = document.getElementById("codigo");
+    var info = document.getElementById("visor-info");
+    var enlaceIno = document.getElementById("enlace-ino");
+    var enlaceH = document.getElementById("enlace-h");
+    var enlaceGit = document.getElementById("enlace-github");
+    var cache = {};
+
+    function repoGitHub() {
+      if (REPO) return REPO;
+      var host = location.hostname;
+      if (!/\.github\.io$/.test(host)) return null;
+      var usuario = host.split(".")[0];
+      var partes = location.pathname.split("/").filter(Boolean);
+      var repo = partes.length && partes[0] !== "tower" ? partes[0] : usuario + ".github.io";
+      return usuario + "/" + repo;
+    }
+
+    function escapar(t) {
+      return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // Resalta los comentarios // y /* */ (sin tocar lo que está dentro de comillas).
+    function resaltar(texto) {
+      var salida = "", i = 0, n = texto.length, enBloque = false;
+      while (i < n) {
+        if (enBloque) {
+          var fin = texto.indexOf("*/", i);
+          fin = fin < 0 ? n : fin + 2;
+          salida += '<span class="com">' + escapar(texto.slice(i, fin)) + "</span>";
+          i = fin; enBloque = false; continue;
+        }
+        var c = texto[i];
+        if (c === '"' || c === "'") {
+          var j = i + 1;
+          while (j < n && texto[j] !== c && texto[j] !== "\n") { if (texto[j] === "\\") j++; j++; }
+          salida += escapar(texto.slice(i, j + 1)); i = j + 1; continue;
+        }
+        if (c === "/" && texto[i + 1] === "/") {
+          var eol = texto.indexOf("\n", i); if (eol < 0) eol = n;
+          salida += '<span class="com">' + escapar(texto.slice(i, eol)) + "</span>";
+          i = eol; continue;
+        }
+        if (c === "/" && texto[i + 1] === "*") { enBloque = true; continue; }
+        salida += escapar(c); i++;
+      }
+      return salida;
+    }
+
+    function mostrar(ley) {
+      var ruta = "firmware/" + ley + "/" + ley + ".ino";
+      enlaceIno.href = ruta;
+      enlaceH.href = "firmware/" + ley + "/controladores_gen.h";
+      var repo = repoGitHub();
+      if (repo) {
+        enlaceGit.href = "https://github.com/" + repo + "/tree/main/tower/firmware/" + ley;
+        enlaceGit.hidden = false;
+      }
+      document.querySelectorAll(".pestana").forEach(function (b) {
+        b.setAttribute("aria-selected", b.dataset.ley === ley ? "true" : "false");
+      });
+      if (cache[ley]) { pintar(ley, ruta, cache[ley]); return; }
+      codigo.textContent = "Cargando…";
+      fetch(ruta).then(function (r) {
+        if (!r.ok) throw new Error(r.status);
+        return r.text();
+      }).then(function (t) {
+        cache[ley] = t; pintar(ley, ruta, t);
+      }).catch(function () {
+        info.textContent = ruta;
+        codigo.textContent = "No se pudo cargar el código aquí (al abrir la página como archivo local el navegador lo bloquea).\n" +
+          "Usa el botón «Descargar .ino» o mira la carpeta tower/firmware del repositorio.";
+      });
+    }
+
+    // Muestra el archivo completo y lo deja posicionado en el bloque propio de la ley
+    // (los seis comparten la cabecera y el andamiaje; lo que cambia empieza en "LEY DE CONTROL").
+    function pintar(ley, ruta, texto) {
+      texto = texto.replace(/\r\n?/g, "\n");
+      var lineas = texto.split("\n");
+      var marca = -1;
+      for (var k = 0; k < lineas.length; k++) {
+        if (lineas[k].indexOf("LEY DE CONTROL") >= 0) { marca = Math.max(0, k - 1); break; }
+      }
+      if (marca < 0) {
+        info.textContent = ruta + " · " + lineas.length.toLocaleString("es") + " líneas";
+        codigo.innerHTML = resaltar(texto);
+        codigo.scrollTop = 0;
+        return;
+      }
+      var antes = lineas.slice(0, marca).join("\n") + "\n";
+      var despues = lineas.slice(marca).join("\n");
+      codigo.innerHTML = resaltar(antes) + '<span id="marca-ley"></span>' + resaltar(despues);
+      info.innerHTML = escapar(ruta) + " · " + lineas.length.toLocaleString("es") +
+        ' líneas · se muestra desde la ley de control (línea ' + (marca + 1) + '). ' +
+        '<a href="#" id="ir-inicio">Ir al inicio del archivo</a>';
+      var span = document.getElementById("marca-ley");
+      codigo.scrollTop = span.offsetTop - 14;
+      document.getElementById("ir-inicio").addEventListener("click", function (e) {
+        e.preventDefault(); codigo.scrollTop = 0;
+      });
+    }
+
+    document.querySelectorAll(".pestana").forEach(function (b) {
+      b.addEventListener("click", function () { mostrar(b.dataset.ley); });
+    });
+    mostrar("ctrl_1_pid");
+  })();
+  </script>
+</body>
+</html>
