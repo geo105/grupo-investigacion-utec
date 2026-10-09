@@ -73,10 +73,7 @@ kbd {
 }
 .barra .contenedor { display: flex; align-items: center; gap: 20px; min-height: 60px; flex-wrap: wrap; }
 .marca { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--texto); text-decoration: none; }
-.marca-icono {
-  width: 32px; height: 32px; border-radius: 8px; background: var(--acento); color: var(--acento-texto);
-  display: grid; place-items: center; font-size: 15px; font-weight: 800; letter-spacing: -.5px;
-}
+.marca-icono { width: 32px; height: 32px; border-radius: 8px; flex: none; }
 .menu { display: flex; gap: 18px; margin-left: auto; flex-wrap: wrap; }
 .menu a { color: var(--texto-suave); text-decoration: none; font-size: 15px; }
 .menu a:hover, .menu a[aria-current="page"] { color: var(--texto); }

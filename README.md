@@ -16,7 +16,7 @@ documentación de cada uno.
 
 ```
 ├── index.html           Página principal del grupo
-├── assets/estilo.css    Estilos compartidos
+├── assets/             Estilos compartidos e ícono del grupo
 └── tower/
     ├── index.html       Página del proyecto Tower
     ├── README.md        Cómo usar el firmware
