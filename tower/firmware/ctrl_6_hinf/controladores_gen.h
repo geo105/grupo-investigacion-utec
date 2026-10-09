@@ -1,11 +1,11 @@
-// GENERADO POR diseno_controladores.py - NO EDITAR A MANO
-// Balancin torre-helice UTEC. Ts = 5 ms (200 Hz).
-// Los seis ajustados a la MISMA autoridad a 6 rad/s (0.95 Hz).
+// Generado por diseno_controladores.py. No editar a mano.
+// Tower: banco torre-helice de 2 GDL - Grupo de Investigacion UTEC.
+// Ts = 5 ms (200 Hz). Las seis leyes tienen la misma |C| a 6 rad/s (0.95 Hz).
 #ifndef CONTROLADORES_GEN_H
 #define CONTROLADORES_GEN_H
 #include <avr/pgmspace.h>
 
-// ---- 0) PID (la especificacion) --------------------------------------
+// ---- 0) PID (referencia de la comparacion) ---------------------------
 #define PID_TH_KP                  0.7f
 #define PID_TH_KD                 0.22f
 #define PID_TH_KI                  0.4f
@@ -22,14 +22,14 @@
 #define LQI_Z_KI             1.5189156f
 
 // ---- 2) LQG : LQI + observador de Kalman ------------------------------
-// Rn = varianza de theta_filt / z_filt MEDIDAS en vuelo (0.25 deg^2 y
-// 0.025 cm^2), no la del sensor crudo. Y las K se rebisecan sobre el
-// compensador COMPLETO (observador incluido): sin eso el LQG volaba con
-// |C_th(j6)| = 0.052 en vez de 1.4356. Ver c22_lqg_v4.
+// Rn = varianza medida en vuelo de las senales que recibe el observador
+// (theta_filt: 0.25 deg^2; z_filt: 0.025 cm^2). Las K se ajustan por
+// biseccion sobre el compensador completo, observador incluido, para que la
+// |C| a 6 rad/s sea la misma que la del PID.
 #define LQG_TH_KP           0.26867937f
 #define LQG_TH_KD           0.23856674f
 #define LQG_TH_KI           0.11666663f
-#define LQG_TH_FUS                0.85f   // fusion de gyro en xh[1]
+#define LQG_TH_FUS                0.85f   // peso del giroscopio en el estado de velocidad
 // TH: Ad discreto
 const float LQG_TH_AD[4] PROGMEM = {0.99999394f, 0.004987411f, -0.0024238818f, 0.99496662f};
 const float LQG_TH_BD[2] PROGMEM = {1.3340066e-05f, 0.0053315424f};
@@ -44,11 +44,11 @@ const float LQG_Z_BD[2] PROGMEM = {0.00027873542f, 0.10949487f};
 // Z: ganancia Kalman x Ts
 const float LQG_Z_LD[2] PROGMEM = {0.012716217f, 0.011170218f};
 
-// ---- 3) MPC : horizonte finito, primera jugada precalculada -----------
-// En 2 KB de RAM no cabe resolver un QP a 200 Hz. La solucion SIN
-// restricciones activas es una ganancia, por recursion de Riccati hacia
-// atras. Las restricciones SI son reales: las aplica el firmware con el
-// gobernador de referencia, el limitador de pendiente y la saturacion.
+// ---- 3) MPC : horizonte finito, ley precalculada ----------------------
+// La solucion sin restricciones activas es una ganancia de estado, obtenida
+// por recursion de Riccati hacia atras (en 2 KB de RAM no cabe resolver un QP
+// a 200 Hz). Las restricciones las aplica el firmware: gobernador de
+// referencia, limitador de pendiente y saturacion con prioridad al angulo.
 #define MPC_TH_KP           0.41224704f
 #define MPC_TH_KD           0.23032113f
 #define MPC_TH_KI          0.040967724f
@@ -57,8 +57,8 @@ const float LQG_Z_LD[2] PROGMEM = {0.012716217f, 0.011170218f};
 #define MPC_Z_KI            0.60878494f
 
 // ---- 4) IMC : control por modelo interno, un solo parametro -----------
-// El biquad YA lleva dentro el reescalado que compensa el termino de
-// amortiguamiento: el sketch vuela igualado con ctrl_esc = 1.
+// El biquad incluye el reescalado que compensa el termino de amortiguamiento,
+// de modo que la |C| queda igualada con ctrl_esc = 1.
 // theta: b0 b1 b2 a1 a2 (a0 = 1), reescalado
 const float IMC_TH_BQ[5] PROGMEM = {1.0308707f, -2.0565464f, 1.0256882f, -1.9884125f, 0.98841249f};
 // z: b0 b1 b2 a1 a2 (a0 = 1)
@@ -68,8 +68,8 @@ const float IMC_Z_BQ[5] PROGMEM = {1.7668273f, -3.3438694f, 1.5776901f, -1.93168
 #define IMC_LAM_Z           0.70686431f   // s
 
 // ---- 5) H-inf : Glover-McFarlane, factores coprimos normalizados ------
-// gamma_min sale en forma cerrada; 1/gamma es el margen de incertidumbre
-// coprima admisible. Lazo cerrado verificado numericamente estable.
+// gamma_min se obtiene en forma cerrada; 1/gamma es el margen de
+// incertidumbre coprima admisible. Lazo cerrado verificado numericamente.
 #define HINF_TH_KD          0.33005335f   // amortiguamiento directo de gyro
 // TH: Ad discreto
 const float HINF_TH_AD[16] PROGMEM = {0.9944218f, -0.048539293f, -0.0050538077f, 0.0f, 0.00099849046f, 0.95961392f, 0.0037721843f, 0.0f, 0.0023347518f, -0.052994304f, 0.99723308f, 0.0f, 0.0055551397f, 0.0035631841f, 0.0049665665f, 1.0f};
