@@ -25,8 +25,6 @@ documentación de cada uno.
     └── img/
 ```
 
-Para agregar un proyecto nuevo: crear su carpeta (por ejemplo `dron/`) con su `index.html`, y añadir su tarjeta en
-la sección *Proyectos* del `index.html` principal.
 
 ## Integrantes
 
