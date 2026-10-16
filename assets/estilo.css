@@ -80,6 +80,8 @@ kbd {
 
 /* ---- portada ---- */
 .portada { padding: 64px 0 40px; }
+.portada .volver { margin: 0 0 18px; }
+.portada .botones { margin-top: 24px; }
 .etiqueta {
   display: inline-block; font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
   color: var(--acento); background: var(--acento-suave); padding: 4px 10px; border-radius: 999px;
@@ -94,7 +96,12 @@ section + section { border-top: 1px solid var(--borde); }
 .seccion-intro { color: var(--texto-suave); max-width: 720px; margin: 0 0 24px; }
 
 /* ---- tarjetas ---- */
-.rejilla { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
+.rejilla { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
+/* con un solo proyecto, la tarjeta ocupa todo el ancho con la foto al costado */
+@media (min-width: 761px) {
+  .rejilla > .tarjeta:only-child { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); }
+  .rejilla > .tarjeta:only-child .tarjeta-img { aspect-ratio: auto; height: 340px; object-position: center 45%; }
+}
 .tarjeta {
   background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio);
   box-shadow: var(--sombra); overflow: hidden; display: flex; flex-direction: column;
@@ -103,8 +110,6 @@ section + section { border-top: 1px solid var(--borde); }
 .tarjeta-cuerpo { padding: 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
 .tarjeta-cuerpo p { margin: 0; color: var(--texto-suave); }
 .tarjeta-pie { margin-top: auto; padding-top: 6px; }
-.tarjeta.pendiente { border-style: dashed; box-shadow: none; background: transparent; }
-.tarjeta.pendiente .tarjeta-cuerpo { justify-content: center; min-height: 180px; }
 
 .estado {
   align-self: flex-start; font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px;

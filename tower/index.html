@@ -27,12 +27,12 @@
   <main>
     <div class="contenedor">
       <section class="portada">
-        <a href="../">← Todos los proyectos</a><br><br>
+        <p class="volver"><a href="../">← Todos los proyectos</a></p>
         <span class="etiqueta">Proyecto · Control</span>
         <h1>Tower: banco torre-hélice de 2 GDL</h1>
         <p class="entrada">Seis leyes de control (PID, LQI, LQG, MPC, IMC y H∞) corriendo en un Arduino, comparadas en el
-          mismo banco y con el mismo protocolo de vuelo. Aquí está el contexto del proyecto y el firmware completo de las seis.</p>
-        <br>
+          mismo banco y con el mismo protocolo de vuelo. Esta página reúne el contexto del proyecto, el hardware y el firmware
+          completo de las seis leyes.</p>
         <div class="botones">
           <a class="boton" href="#firmware">Ver el código</a>
           <a class="boton secundario" href="firmware_tower.zip" download>Descargar firmware (.zip)</a>
@@ -54,9 +54,9 @@
               para que su controlador de ángulo tenga la <strong>misma ganancia a 6 rad/s</strong> (0.95 Hz), la frecuencia
               a la que oscila el brazo en vuelo.</p>
             <p>Con cada ley se hicieron vuelos repetidos con el mismo protocolo: despegue, subida por rampa hasta 10 cm y
-              crucero. El análisis y los resultados están en el paper que enviamos a la conferencia IEEE ICSC 2026.</p>
-            <p class="nota"><strong>Estado:</strong> paper en revisión. Cuando se publique, aquí pondremos la referencia
-              completa y los resultados.</p>
+              crucero. El análisis y los resultados se presentan en el artículo asociado (ver
+              <a href="#publicacion">Publicación</a>).</p>
+            <p class="nota"><strong>Estado:</strong> artículo en revisión en IEEE ICSC 2026.</p>
           </div>
           <figure>
             <img class="foto-banco" src="img/banco.jpg" alt="Banco torre-hélice: marco con dos guías metálicas, carro con el brazo azul, dos motores con hélices y el sensor ultrasónico en la base" width="900" height="1600">
@@ -188,8 +188,8 @@
         <p><strong>Experimental Comparison of Control Laws on a 2-DOF Tower-Propeller Testbed.</strong><br>
           G. H. Ramos Astuhuamán, E. A. Chávez Depaz, J. N. Naupay Fabian, D. A. Miranda Zamora, B. S. Ramos Cadenillas,
           S. Rejas Córdova y D. Inga Narváez.<br>
-          Enviado a la 14th International Conference on Systems and Control (ICSC 2026), Oporto, Portugal · en revisión.</p>
-        <p class="seccion-intro">Si usas este código, cita el paper. La referencia completa estará aquí cuando se publique.</p>
+          Enviado a la 14th IEEE International Conference on Systems and Control (ICSC 2026), Oporto, Portugal · en revisión.</p>
+        <p class="seccion-intro">Si usas este código o el banco en tu trabajo, por favor cita este artículo.</p>
       </section>
     </div>
   </main>
@@ -200,7 +200,7 @@
 
   <script>
   (function () {
-    // Repositorio en GitHub ("usuario/repositorio"). Vacío = se detecta solo en GitHub Pages.
+    // Repositorio de GitHub ("usuario/repositorio"). Si queda vacio, se deduce de la URL de GitHub Pages.
     var REPO = "";
 
     var codigo = document.getElementById("codigo");
@@ -272,8 +272,8 @@
         cache[ley] = t; pintar(ley, ruta, t);
       }).catch(function () {
         info.textContent = ruta;
-        codigo.textContent = "No se pudo cargar el código aquí (al abrir la página como archivo local el navegador lo bloquea).\n" +
-          "Usa el botón «Descargar .ino» o mira la carpeta tower/firmware del repositorio.";
+        codigo.textContent = "No se pudo cargar el código en el visor.\n" +
+          "Usa el botón «Descargar .ino» o consulta la carpeta tower/firmware del repositorio.";
       });
     }
 

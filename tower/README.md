@@ -7,8 +7,8 @@ complementario).
 Comparamos seis leyes de control en el mismo hardware. Cada una se ajustó para que su controlador de ángulo tenga la
 misma ganancia a 6 rad/s (0.95 Hz), de modo que las diferencias reflejen la estructura de la ley y no su sintonía.
 
-**Paper:** *Experimental Comparison of Control Laws on a 2-DOF Tower-Propeller Testbed*, enviado a la 14th
-International Conference on Systems and Control (ICSC 2026), en revisión.
+**Artículo:** *Experimental Comparison of Control Laws on a 2-DOF Tower-Propeller Testbed*, enviado a la 14th
+IEEE International Conference on Systems and Control (ICSC 2026); en revisión.
 
 ## Firmware
 
@@ -21,13 +21,13 @@ International Conference on Systems and Control (ICSC 2026), en revisión.
 | IMC | [`firmware/ctrl_5_imc`](firmware/ctrl_5_imc) | +48.8° |
 | H∞ | [`firmware/ctrl_6_hinf`](firmware/ctrl_6_hinf) | +41.8° |
 
-Los seis sketches son idénticos salvo el bloque de la ley de control. Las ganancias están en `controladores_gen.h`
-(generado por el script de diseño; no editar a mano). Todo junto: [`firmware_tower.zip`](firmware_tower.zip).
+Los seis sketches son idénticos salvo el bloque de la ley de control. Las ganancias y matrices de cada ley están en
+`controladores_gen.h`. Las seis carpetas en un solo archivo: [`firmware_tower.zip`](firmware_tower.zip).
 
-## Cómo cargarlo
+## Uso
 
 1. Abrir `ctrl_X_ley/ctrl_X_ley.ino` en el Arduino IDE (la carpeta lleva su `controladores_gen.h`).
-2. Placa **Arduino Uno**; subir.
+2. Seleccionar la placa **Arduino Uno** y cargar el programa.
 3. Monitor Serie a **115200 baudios**.
 4. Antes del primer vuelo: `i` (identificar motores), `o` (cero del ángulo con el brazo nivelado) y `h` (estado).
 5. `C` arranca y sube por la rampa, `L` aterriza, `S` apaga los motores.
@@ -43,5 +43,5 @@ motores.
 | IMU (I²C, 0x68) | A4 / A5 |
 | Tensión de las fuentes izquierda / derecha | A0 / A1 |
 
-> **Seguridad:** prueba siempre con el banco fijado, sin manos cerca de las hélices y con el botón de emergencia a
-> mano. IMC y H∞ conviene volarlos primero con `a0.5`.
+> **Seguridad:** los ensayos se hacen con el banco fijado, sin manos cerca de las hélices y con el botón de
+> emergencia al alcance. Se recomienda probar IMC y H∞ primero con `a0.5`.
